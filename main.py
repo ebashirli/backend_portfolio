@@ -4,7 +4,7 @@ from database import create_db_and_tables, engine
 from helpers.timestamp import get_date_from_str, make_res
 from uvicorn import run
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, File, UploadFile
 from sqlmodel import Session, select
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -177,6 +177,23 @@ async def get_logs(_id: int,  request: Request):
       "count": len(exercises),
       "_id": str(_id),
       "log": exercises
+    }
+
+@app.get("/fileupload", response_class=HTMLResponse)
+async def get_file(request: Request):
+  return templates.TemplateResponse(
+    "file.html", {"request": request}
+  )
+
+@app.post("/api/fileanalyse")
+async def create_upload_file(upfile: UploadFile | None = None):
+  if not upfile:
+    return {"message": "No upload file sent"}
+  else:
+    return {
+      "name": upfile.filename,
+      "type": upfile.content_type,
+      "size": upfile.spool_max_size,
     }
 
 
