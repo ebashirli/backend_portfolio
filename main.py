@@ -13,6 +13,11 @@ from fastapi.responses import HTMLResponse
 
 from models import Hero, User, Url, Exercise
 
+from sqlmodel.sql.expression import Select, SelectOfScalar
+
+SelectOfScalar.inherit_cache = True  # type: ignore
+Select.inherit_cache = True 
+
 app = FastAPI()
 
 app.add_middleware(
@@ -88,11 +93,9 @@ async def post_shorturl(url: str = Form()):
 async def get_shorturl(id: int):
   with Session(engine) as session:
     url = session.exec(select(Url).where(Url.short_url==id)).first()
-    return RedirectResponse(url.original_url)
+    return RedirectResponse(url.original_url, status_code=303)
     
     
-
-
 @app.get("/api/exercise-tracker", response_class=HTMLResponse)
 async def render_exercise_tracker_page(request: Request):
   return templates.TemplateResponse("exercise-tracker.html", {"request": request})
